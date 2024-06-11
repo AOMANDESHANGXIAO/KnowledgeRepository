@@ -10,7 +10,7 @@
 
 >  实现：建立<u>第三张中间表</u>，中间表至少包含两个外键，分别关联两方主键。
 
-![image-20240610164821924](D:\KnowledgeRepository\KnowledgeRepository\Mysql\assets\image-20240610164821924.png)
+![image-20240610164821924](.\assets\image-20240610164821924.png)
 
 **创建一张表**
 
@@ -45,15 +45,15 @@ insert into student_course values (null, 1,1), (null, 1,2), (null, 1,3),(null, 2
 
 **学生表**
 
-![image-20240610170840206](D:\KnowledgeRepository\KnowledgeRepository\Mysql\assets\image-20240610170840206.png)
+![image-20240610170840206](.\assets\image-20240610170840206.png)
 
 **课程表**
 
-![image-20240610170853939](D:\KnowledgeRepository\KnowledgeRepository\Mysql\assets\image-20240610170853939.png)
+![image-20240610170853939](.\assets\image-20240610170853939.png)
 
 **学生课程信息表**
 
-![image-20240610170902642](D:\KnowledgeRepository\KnowledgeRepository\Mysql\assets\image-20240610170902642.png)
+![image-20240610170902642](.\assets\image-20240610170902642.png)
 
 ## 一对一关系
 
@@ -61,11 +61,11 @@ insert into student_course values (null, 1,1), (null, 1,2), (null, 1,3),(null, 2
 
 关系：一对一关系，多用于单表拆分，将一张表的基础字段放在一张表中，其他详情字段放在另一张表中，以提升操作效率。
 
-![image-20240610171219401](D:\KnowledgeRepository\KnowledgeRepository\Mysql\assets\image-20240610171219401.png)
+![image-20240610171219401](.\assets\image-20240610171219401.png)
 
 拆分后
 
-![image-20240610171248203](D:\KnowledgeRepository\KnowledgeRepository\Mysql\assets\image-20240610171248203.png)
+![image-20240610171248203](.\assets\image-20240610171248203.png)
 
 >  实现：在任意一方加入外键，关联另外一方的主键，并且设置外键为唯一的(UNIQUE)。
 
@@ -146,9 +146,69 @@ select e.*, d.dept as 所属部门 from emp as e left outer join dept as d on e.
 SELECT 字段列表 FROM 表A 别名A JOIN 表A 别名B ON 条件...;
 ```
 
+#### 联合查询 UNION
+
+对于union查询，就是把多次查询的结果合并起来，形成一个新的查询结果集。
+
+语法：
+
+```sql
+SELECT 字段列表 FROM 表A ...
+UNION [ALL]
+SELECT 字段列表 FROM 表B ...
+```
+
+UNION ALL 将全部的数据直接合并在一起，UNION会进行去重。
+
+查询结果必须要一致。
+
 ### 2. 子查询
 
-![image-20240610174000254](D:\KnowledgeRepository\KnowledgeRepository\Mysql\assets\image-20240610174000254.png)
+![image-20240610174000254](.\assets\image-20240610174000254.png)
+
+概念： SQL语句中嵌套SELECT语句，称为`嵌套查询`，又称`子查询`。
+
+```sql
+SELECT * FROM t1 WHERE column1 = (SELECT column1 FROM t2);
+```
+根据子查询结果的不同，分为：
+1. 标量子查询 (子查询结果为单个值)
+2. 列子查询 (子查询结果为一列)
+3. 行子查询(子查询结果为一行)
+4. 表子查询(子查询结果为多行多列)
+
+根据子查询位置，分为：
+
+1. WHERE 之后，
+2.  FROM 之后，
+3.  SELECT 之后。
+
+#### 标量子查询
+
+#### 列子查询
+
+操作符： IN, NOTIN, ANY, SOME, ALL
+
+| 操作符 | 描述                 |
+| ------ | -------------------- |
+| IN     | 子查询的结果在XX条件 |
+| NOT IN | 不在XX条件           |
+| ANY    | 任一条件             |
+| SOME   | 通ANY                |
+| ALL    | 所有条件都需要满足   |
+
+``` sql
+-- 标量子查询
+-- 查询与赵十四领导相同的员工信息
+-- 首先查赵十四的领导id
+select manage_id from emp where emp.name = '张麻子';
+-- 查询与该id相同的员工信息
+select * from emp where emp.manage_id = (select manage_id from emp where emp.name = '张麻子');
+```
+
+
+
+
 
 ## 使用chatgpt做的练习
 

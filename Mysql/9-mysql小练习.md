@@ -69,19 +69,19 @@ insert into score values
 ## 2. 数据库和表的样子
 ### 课程表
 
-![image-20240610163855995](D:\KnowledgeRepository\KnowledgeRepository\Mysql\assets\image-20240610163855995.png)
+![image-20240610163855995](.\assets\image-20240610163855995.png)
 
 ### 考试得分表
 
-![image-20240610163904972](D:\KnowledgeRepository\KnowledgeRepository\Mysql\assets\image-20240610163904972.png)
+![image-20240610163904972](.\assets\image-20240610163904972.png)
 
 ### 学生信息表
 
-![image-20240610163914408](D:\KnowledgeRepository\KnowledgeRepository\Mysql\assets\image-20240610163914408.png)
+![image-20240610163914408](.\assets\image-20240610163914408.png)
 
 ### 教师表
 
-![image-20240610163923096](D:\KnowledgeRepository\KnowledgeRepository\Mysql\assets\image-20240610163923096.png)
+![image-20240610163923096](.\assets\image-20240610163923096.png)
 
 ## 3. 查询练习
 
@@ -99,3 +99,74 @@ where sc1.s_score > sc2.s_score;
 
 ```
 
+### 2、查询"01"课程比"02"课程成绩低的学生的信息及课程分数
+
+```sql
+-- 查询 01 课程比02课程成绩低的学生的信息及课程分数
+select s.*, score_01.s_score as 第一门课成绩, score_02.s_score as 第二门课成绩 from student as s
+join (select * from score where c_id=1) as score_01 on score_01.s_id = s.s_id
+join (select * from score where c_id=2) as score_02 on score_02.s_id = s.s_id
+where score_02.s_score > score_01.s_score;
+```
+
+### 3. 查询平均成绩大于等于60分的同学的学生编号和学生姓名和平均成绩
+
+``` sql
+-- 查询平均成绩大于等于60分的同学的学生编号和学生姓名和平均成绩
+select s.s_id, s.s_name, c1.s_score as 语文课, c2.s_score as 数学课, c3.s_score as 英语课, (c1.s_score+c2.s_score+c3.s_score)/3 as 平均成绩 from student as s
+join (select * from score where score.c_id=1) as c1
+on c1.s_id=s.s_id
+join (select * from score where score.c_id=2) as c2
+on c2.s_id=s.s_id
+join (select * from score where score.c_id=3) as c3
+on c3.s_id=s.s_id
+where (c1.s_score+c2.s_score+c3.s_score)/3 >= 60;
+
+-- 更好的方法
+-- 查询平均成绩大于等于60分的同学的学生编号和学生姓名和平均成绩
+-- 平均成绩怎么算出来?
+select s.s_id, s.s_name from student s;
+
+-- 查出来每个学生的平均成绩
+select s_id, avg(s_score) as Avg_score from score group by s_id having Avg_score >= 60;
+
+-- 现在连接两张表
+select s.s_id, s.s_name,Avg_score from student s left join
+(select s_id, avg(s_score) as Avg_score from score group by s_id having Avg_score >= 60) sc on sc.s_id = s.s_id;
+```
+
+### 4. 查询平均成绩小于60分的同学的学生编号和学生姓名和平均成绩(包括有成绩的和无成绩的)
+
+``` sql
+-- 查询平均成绩小于60分的同学的学生编号和学生姓名和平均成绩(包括有成绩的和无成绩的)
+select s.s_id, s.s_name from student s;
+
+
+select s_id, avg(s_score) as Avg_score from score group by s_id having Avg_score < 60;
+
+SELECT
+	s.s_id,
+	s.s_name,
+	Avg_score AS '平均成绩' 
+FROM
+	student s
+	LEFT JOIN ( SELECT s_id, avg( s_score ) AS Avg_score FROM score GROUP BY s_id HAVING Avg_score < 60 ) AS sc ON s.s_id = sc.s_id;
+```
+
+### 5. 查询所有同学的学生编号、学生姓名、选课总数、所有课程的总成绩
+
+```sql
+-- 5. 查询所有同学的学生编号、学生姓名、选课总数、所有课程的总成绩
+
+SELECT
+	s.s_id,
+	s.s_name,
+	courseNum,
+	sum_of_courses 
+FROM
+	student s
+	JOIN ( SELECT s_id, count( s_id ) AS courseNum FROM score GROUP BY s_id ) AS score_t ON score_t.s_id = s.s_id
+	JOIN ( SELECT s_id, sum( s_score ) AS sum_of_courses FROM score GROUP BY s_id ) AS score_sum ON score_sum.s_id = s.s_id;
+```
+
+总结下来就是：分开来写，要查什么就查什么，最后进行汇总。
