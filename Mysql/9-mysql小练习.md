@@ -170,3 +170,49 @@ FROM
 ```
 
 总结下来就是：分开来写，要查什么就查什么，最后进行汇总。
+
+### 6. 查询"李"姓老师的数量
+
+```sql
+-- 查询"李"姓老师的数量
+use mysql_test;
+select count(*) as 老师数量 from teacher where teacher.t_name like '李%';
+```
+
+### 7. 询学过"张三"老师授课的同学的信息
+
+```sql
+-- 最后连接表
+SELECT
+	s.* 
+FROM
+	student s
+	JOIN (
+	SELECT
+		s_id 
+	FROM
+		score 
+	WHERE
+	score.c_id = ( SELECT c_id FROM course WHERE t_id = ( SELECT t_id FROM teacher WHERE t_name = '张三' ) ) 
+	) AS t ON t.s_id = s.s_id;
+```
+
+### 8. 查询学过编号为"01"并且也学过编号为"02"的课程的同学的信息
+
+```sql
+
+SELECT
+	s.* 
+FROM
+	student s
+	JOIN (
+	SELECT
+		t1.s_id 
+	FROM
+		score AS t1
+		INNER JOIN ( SELECT s_id FROM score WHERE score.c_id = 2 ) AS t2 ON t2.s_id = t1.s_id 
+	WHERE
+		t1.c_id = 1 
+	) AS t ON t.s_id = s.s_id;
+```
+
