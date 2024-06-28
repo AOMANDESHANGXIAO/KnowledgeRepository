@@ -216,3 +216,82 @@ FROM
 	) AS t ON t.s_id = s.s_id;
 ```
 
+###  9. 查询没有学全所有课程的同学的信息
+
+```sql
+-- 查询没有学过所有课程的同学的信息
+-- 查信息
+select * from student;
+
+-- 统计全部课程的数量
+select count(*) as all_course_num from course;
+
+-- 查询每个学生选择课程的数量
+select s_id, count(*) as course_num from score group by s_id;
+
+
+select s_id, count(*) as course_num from score group by s_id having 
+	course_num < (select count(*) from course);
+
+-- 连接表, 将course_num小于全部的筛选出来
+SELECT
+	s.* 
+FROM
+	student AS s
+	JOIN (
+	SELECT
+		s_id,
+		count( * ) AS course_num 
+	FROM
+		score 
+	GROUP BY
+		s_id 
+	HAVING
+	course_num < ( SELECT count( * ) FROM course ) 
+	) AS course_num_t ON course_num_t.s_id = s.s_id;
+-- 	不正确，因为当有学生一门课都没有选时不会有成绩，也就不会出现在score表中
+-- 导致bug存在
+
+-- 别人的答案
+-- 将s_id查出来，然后统计数目，如果数量和课程数量不一致就将其包含出来
+SELECT
+	* 
+FROM
+	student 
+WHERE
+	s_id NOT IN ( SELECT s_id FROM score GROUP BY s_id HAVING count( * ) = ( SELECT count( * ) FROM course ) );
+```
+
+### 10. 查询至少有一门课与学号为"01"的同学所学相同的同学的信息
+
+```sql
+-- 10. 查询至少有一门课与学号为"01"的同学所学相同的同学的信息
+SELECT
+	* 
+FROM
+	student 
+WHERE
+	s_id IN (
+	SELECT DISTINCT
+		s_id 
+	FROM
+		score AS s
+	INNER JOIN ( SELECT c_id FROM score WHERE s_id = 1 ) t1 ON s.c_id = t1.c_id 
+	);
+```
+
+### 11. 查询和"01"号的同学学习的课程完全相同的其他同学的信息
+
+```sql
+select * from student where s_id in 
+(
+	select s_id from score s
+	join (
+		select c_id from score where s_id =1
+	) t1 
+	on s.c_id = t1.c_id
+	where s_id!=1
+	group by s_id having count(*) = (select count(*) from score where score.s_id = 1)
+)
+```
+
